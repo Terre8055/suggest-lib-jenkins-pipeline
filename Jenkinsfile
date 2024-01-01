@@ -45,8 +45,9 @@ pipeline {
             }
             steps {
                 echo 'Deploying Snapshot from main.....'
-                echo "${GITLAB_CONN_URL}"
-                sh "mvn -B deploy"
+                configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B deploy"
+                }
             }
         }
 
@@ -56,7 +57,9 @@ pipeline {
             }
             steps {
                 echo 'Verifying and Testing on feature branch....'
-                sh "mvn verify"
+                configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn verify"
+                }
             }
         }
 
@@ -68,9 +71,12 @@ pipeline {
                 script {
                     def releaseVersion = params.VERSION
                     echo "Releasing version: ${releaseVersion}"
-                    
-                    sh "mvn versions:set -DnewVersion=${releaseVersion}"
 
+
+                    configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn versions:set -DnewVersion=${releaseVersion}"
+                    }
+                    
                     sh "git config user.email ${GITLAB_CONN_EMAIL}"
                     sh "git config user.name ${GITLAB_CONN_NAME}"
 
@@ -81,7 +87,10 @@ pipeline {
                         sh "git push origin ${BRANCH_NAME} ${releaseVersion}"
                     }
 
-                    sh "mvn -Dresume=false -DskipTests=true -DignoreSnapshots=true -DconnectionUrl=${GITLAB_CONN_URL} release:prepare release:perform -B -X"
+                    configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
+                        sh "mvn -Dresume=false -DskipTests=true -DignoreSnapshots=true -DconnectionUrl=${GITLAB_CONN_URL} release:prepare release:perform -B -X"
+                    }
+                    
                 }
             }
         }
