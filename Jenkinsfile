@@ -58,7 +58,7 @@ pipeline {
             steps {
                 echo 'Verifying and Testing on feature branch....'
                 configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
-                            sh "mvn verify"
+                            sh "mvn -s $MAVEN_SETTINGS_XML verify"
                 }
             }
         }
@@ -74,7 +74,7 @@ pipeline {
 
 
                     configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
-                            sh "mvn versions:set -DnewVersion=${releaseVersion}"
+                            sh "mvn -s $MAVEN_SETTINGS_XML versions:set -DnewVersion=${releaseVersion}"
                     }
                     
                     sh "git config user.email ${GITLAB_CONN_EMAIL}"
@@ -88,7 +88,7 @@ pipeline {
                     }
 
                     configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
-                        sh "mvn -Dresume=false -DskipTests=true -DignoreSnapshots=true -DconnectionUrl=${GITLAB_CONN_URL} release:prepare release:perform -B -X"
+                        sh "mvn -s $MAVEN_SETTINGS_XML -Dresume=false -DskipTests=true -DignoreSnapshots=true -DconnectionUrl=${GITLAB_CONN_URL} release:prepare release:perform -B -X"
                     }
                     
                 }
