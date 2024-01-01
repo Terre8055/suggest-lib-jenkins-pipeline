@@ -4,7 +4,7 @@ pipeline {
 
     tools {
         maven "maven"
-        jdk "JDK 1.8"
+        jdk "openjdk-8"
     }
 
     triggers {
@@ -21,7 +21,6 @@ pipeline {
         timestamps()
         timeout(time: 15, unit: 'MINUTES') 
         gitLabConnection('gitlab')
-        ansiColor("xterm")
     }
 
     parameters {
@@ -46,7 +45,7 @@ pipeline {
             }
             steps {
                 echo 'Deploying Snapshot from main.....'
-                echo ${GITLAB_CONN_URL}
+                echo "${GITLAB_CONN_URL}"
                 sh "mvn -B deploy"
             }
         }
