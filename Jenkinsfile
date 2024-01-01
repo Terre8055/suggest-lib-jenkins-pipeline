@@ -10,6 +10,12 @@ pipeline {
     triggers {
         gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
     }
+
+    environment {
+        GITLAB_CONN_URL = "scm:git:https://gitlab.com/Terre8055/imageio-ext.git"
+        GITLAB_CONN_EMAIL = "michaelappiah2018@icloud.com"
+        GITLAB_CONN_NAME = "Terre8055"
+    }
     
     options {
         timestamps()
@@ -22,6 +28,7 @@ pipeline {
         booleanParam(name: "RELEASE",
                 description: "Build a release from current commit.",
                 defaultValue: false)
+        string(name: "VERSION", defaultValue: "1.0", description: "Specify the version for the release.")
     }
 
     stages {
@@ -38,6 +45,8 @@ pipeline {
                 branch "main"
             }
             steps {
+                echo 'Deploying Snapshot from main.....'
+                echo ${GITLAB_CONN_URL}
                 sh "mvn -B deploy"
             }
         }
@@ -47,6 +56,7 @@ pipeline {
                 expression { BRANCH_NAME ==~ /^feature\/.*$/ }
             }
             steps {
+                echo 'Verifying and Testing on feature branch....'
                 sh "mvn verify"
             }
         }
@@ -56,9 +66,24 @@ pipeline {
                 expression { params.RELEASE }
             }
             steps {
-                sh "mvn versions:set -DnewVersion=1.0"
-                sh "mvn -Dresume=false -DignoreSnapshots=true -Dconnectionurl= release:prepare"
-                sh "mvn -Dresume=false -DignoreSnapshots=true -Dconnectionurl= release:perform"
+                script {
+                    def releaseVersion = params.VERSION
+                    echo "Releasing version: ${releaseVersion}"
+                    
+                    sh "mvn versions:set -DnewVersion=${releaseVersion}"
+
+                    sh "git config user.email ${GITLAB_CONN_EMAIL}"
+                    sh "git config user.name ${GITLAB_CONN_NAME}"
+
+                    withCredentials([usernamePassword(credentialsId: 'gt_token', passwordVariable: 'GITLAB_PASSWORD', usernameVariable: 'GITLAB_USERNAME')]) {
+                        sh "git commit -am 'Release version ${releaseVersion}'"
+                        sh "git tag -a ${releaseVersion} -m 'Release version ${releaseVersion}'"
+                        sh "git remote set-url origin https://${GITLAB_USERNAME}:${GITLAB_PASSWORD}@gitlab.com/Terre8055/suggest-lib.git"
+                        sh "git push origin ${BRANCH_NAME} ${releaseVersion}"
+                    }
+
+                    sh "mvn -Dresume=false -DskipTests=true -DignoreSnapshots=true -DconnectionUrl=${GITLAB_CONN_URL} release:prepare release:perform -B -X"
+                }
             }
         }
 
