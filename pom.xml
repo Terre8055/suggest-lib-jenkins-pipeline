@@ -12,7 +12,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <artifactory>http://artifactory:8081/artifactory</artifactory>
+    <artifactory>http://13.201.98.155:8082/artifactory/</artifactory>
   </properties>
 
   <build>
