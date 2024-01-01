@@ -71,13 +71,13 @@
 <distributionManagement>
     <repository>
         <id>central</id>
-        <name>74a640625a63-central</name>
-        <url>http://13.201.98.155:8081/artifactory/libs-release-local</url>
+        <name>libs-release</name>
+        <url>${artifactory}/libs-release-local</url>
     </repository>
     <snapshotRepository>
-        <id>snapshot</id>
-        <name>74a640625a63-snapshots</name>
-        <url>http://13.201.98.155:8081/artifactory/libs-snapshot-local</url>
+        <id>snapshots</id>
+        <name>libs-snapshot</name>
+        <url>${artifactory}/libs-snapshot-local</url>
     </snapshotRepository>    
 </distributionManagement>
 </project>

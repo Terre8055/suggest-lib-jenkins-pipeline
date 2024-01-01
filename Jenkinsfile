@@ -45,8 +45,8 @@ pipeline {
             }
             steps {
                 echo 'Deploying Snapshot from main.....'
-                withMaven(maven: 'maven', mavenSettingsConfig: 'artifactory-settings') {
-                    sh "mvn -B deploy "
+                configFileProvider([configFile(fileId: 'artifactory-settings', variable: 'MAVEN_SETTINGS_XML')]) {
+                            sh "mvn -B deploy"
                 }
             }
         }
